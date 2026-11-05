@@ -4,11 +4,11 @@
 
 ## 本地预览
 
-在 VS Code 中对 `index.html` 使用 Live Server（或使用任意静态 HTTP 服务发布仓库根目录），通过服务提供的 `http://localhost:端口/` 地址浏览。不要以本地文件地址打开。网页资源全部使用相对路径；素材位于 `assets/portfolio/`，`gallery-data.js` 保存目录层级、文件排序和导航数据。
+在 VS Code 中对 `index.html` 使用 Live Server（或使用任意静态 HTTP 服务发布仓库根目录），通过服务提供的 `http://localhost:端口/` 地址浏览。不要以本地文件地址打开。页面代码、样式和头像等资源使用相对路径；作品图片通过 jsDelivr 从 `fengmu-portfolio-img` 仓库加载。`gallery-data.js` 保存目录层级、文件排序和导航数据。
 
 ## 发布到 GitHub Pages
 
-将仓库根目录设为 Pages 发布源（Deploy from a branch，选择 `main` 和 `/(root)`），保存后等待 GitHub Pages 完成发布。
+当前网页仓库默认分支为 `master`。启用 Pages 时，将仓库根目录设为发布源（Deploy from a branch，选择 `master` 和 `/(root)`），保存后等待 GitHub Pages 完成发布。
 
 ## 替换封面或作品素材
 
