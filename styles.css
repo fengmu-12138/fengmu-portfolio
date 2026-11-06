@@ -175,3 +175,10 @@ img{-webkit-user-drag:none;user-select:none;-webkit-user-select:none}
 .detail-cards .product-image{aspect-ratio:1/1}
 .detail-cards .product-image img{width:100%;height:100%;object-fit:contain}
 
+
+.necklace-four-grid { align-items: start; }
+.necklace-four-grid .gallery-item { aspect-ratio: auto; background: transparent; }
+.necklace-four-grid .gallery-item img { aspect-ratio: auto; height: auto; display: block; }
+.long-page-parts { max-width: 100%; cursor: grab; }
+.long-page-parts.is-dragging { cursor: grabbing; }
+.long-page-parts img { width: 100%; margin: 0; }
