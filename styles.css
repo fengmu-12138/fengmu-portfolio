@@ -182,3 +182,62 @@ img{-webkit-user-drag:none;user-select:none;-webkit-user-select:none}
 .long-page-parts { max-width: 100%; cursor: grab; }
 .long-page-parts.is-dragging { cursor: grabbing; }
 .long-page-parts img { width: 100%; margin: 0; }
+
+.model-fold-toggle { display: none; }
+
+@media (max-width: 680px) {
+  .site-header > .nav-profile { margin-left: auto; margin-right: 12px; }
+  .site-header > .nav-profile .profile-trigger { width: 38px; height: 38px; transform: none; }
+  .site-header > .nav-profile .profile-card {
+    position: fixed;
+    top: 75px;
+    right: 5vw;
+    left: auto;
+    transform: none;
+    width: min(280px, 90vw);
+    padding: 15px 18px 10px;
+    max-height: calc(100dvh - 85px);
+    overflow: auto;
+  }
+  .site-header > .nav-profile:not(.is-open) .profile-card { display: none; }
+  .site-header > .nav-profile .profile-card-avatar {
+    position: static;
+    transform: none;
+    width: 64px;
+    height: 64px;
+    margin-bottom: 8px;
+  }
+  .profile-card a { display: block; width: 100%; padding: 7px 0; border-top: 1px solid #ffffff12; color: #d2cabb; font-size: 12px; }
+  .site-header nav.open { display: flex; align-items: stretch; top: 100%; max-height: calc(100dvh - 80px); overflow-y: auto; }
+  .site-header nav > .nav-home { align-self: stretch; }
+
+  .model-gallery-fold:has(.model-fold-toggle[aria-expanded="false"]) .model-grid > .gallery-item:nth-child(n+7) { display: none; }
+  .model-fold-toggle {
+    display: block;
+    margin: 16px auto 0;
+    padding: 10px 18px;
+    border: 1px solid #776747;
+    background: #11110f;
+    color: var(--gold2);
+    font: inherit;
+    font-size: 13px;
+    scroll-margin: 90px;
+  }
+
+  .carousel:is(.wide-stage, .poster-stage) { padding-inline: 0; }
+  .carousel:is(.wide-stage, .poster-stage) .carousel-frame img { display: block; width: 100%; max-height: none; }
+  .carousel:is(.wide-stage, .poster-stage) .carousel-arrow.prev { left: 5px; }
+  .carousel:is(.wide-stage, .poster-stage) .carousel-arrow.next { right: 5px; }
+  .poster-switcher { gap: 7px; margin-bottom: 12px; }
+  .poster-dot { width: 25px; height: 25px; font-size: 11px; }
+
+  .site-footer { align-items: center; gap: 7px; padding: 10px 4vw 12px; }
+  .footer-identity { order: 0; }
+  .footer-identity strong { font-size: 22px; }
+  .footer-thanks { order: 1; }
+  .footer-thanks em { font-size: 22px; }
+  .footer-contact { order: 2; flex-direction: row; flex-wrap: wrap; align-items: center; justify-content: center; gap: 7px 13px; }
+  .footer-contact a, .footer-contact .footer-wechat { min-height: 22px; gap: 5px; font-size: 11px; }
+  .footer-contact svg { width: 14px; height: 14px; flex-shrink: 0; }
+  .back-to-top { bottom: 130px; }
+}

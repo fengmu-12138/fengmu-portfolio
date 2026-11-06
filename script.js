@@ -42,7 +42,13 @@ function renderDetails(node){const show=findDir(node,['图片展示']),full=find
 function detailMatch(im,node){const key=keyImg(im);return node?.images?.find(x=>keyImg(x)===key)||null}
 function populatedPastDetail(node){const dirs=node?.children||[];return dirs.find(d=>label(d).includes('详情页')&&findDir(d,['展示页面'])?.images?.length&&findDir(d,['二级页面'])?.images?.length)||findDir(node,['详情页'])}
 function populatedPastCross(node){const dirs=node?.children||[];return dirs.find(d=>label(d).includes('跨境电商')&&(d.images?.length||(d.children||[]).some(child=>count(child)>0)))||findDir(node,['跨境电商'])}
-function renderBrand(node){const subs=node.children||[];const sub=subs[activeBrand]||subs[0];let body='';const name=label(sub);if(name.includes('品牌故事'))body=renderBrandStory(sub);else if(name.toLowerCase().includes('banner'))body=carousel(sub,'brand-banner','wide-stage');else if(name.includes('宣传卡'))body=renderBrandCards(sub);else if(name.includes('品宣卡'))body=renderBrandReviews(sub);else body=gallery(sub,{grid:'model-grid'});return `${sectionTabs(node,activeBrand,'brand-tab')}<div class="brand-panel"><div class="category-heading"><span>${escapeHtml(name)}</span><i>${(sub.images||[]).length+(sub.children||[]).reduce((a,c)=>a+count(c),0)} IMAGES</i></div>${body}</div>`}
+function renderBrand(node){const subs=node.children||[];const sub=subs[activeBrand]||subs[0];let body='';const name=label(sub);if(name.includes('品牌故事'))body=renderBrandStory(sub);else if(name.toLowerCase().includes('banner'))body=carousel(sub,'brand-banner','wide-stage');else if(name.includes('宣传卡'))body=renderBrandCards(sub);else if(name.includes('品宣卡'))body=renderBrandReviews(sub);else {
+  body=gallery(sub,{grid:'model-grid'});
+  const remaining=allImages(sub).length-6;
+  if(name.includes('模特摆拍') && remaining>0){
+    body=`<div class="model-gallery-fold">${body}<button type="button" class="model-fold-toggle" aria-expanded="false" data-remaining="${remaining}">展开其余 ${remaining} 张</button></div>`;
+  }
+}return `${sectionTabs(node,activeBrand,'brand-tab')}<div class="brand-panel"><div class="category-heading"><span>${escapeHtml(name)}</span><i>${(sub.images||[]).length+(sub.children||[]).reduce((a,c)=>a+count(c),0)} IMAGES</i></div>${body}</div>`}
 function renderBrandStory(node){const imgs=node.images||[];const header=imgs.find(i=>i.name.includes('页头'));const lead=imgs.filter(i=>/^主图(?:[1-9]|10|11)\./.test(i.name));const last=imgs.find(i=>/^主图12\./.test(i.name));return `${header?`<figure class="brand-header-image gallery-item" data-gallery="brand-header" data-src="${imgPath(header)}" data-title="${escapeHtml(header.name)}" data-index="0"><img src="${imgPath(header)}" alt="品牌故事页头"><figcaption>${escapeHtml(header.name)}</figcaption></figure>`:''}<div class="brand-story-carousel">${carousel({images:lead},'brand-story','wide-stage')}</div>${last?`<figure class="brand-last-image gallery-item" data-gallery="brand-last" data-src="${imgPath(last)}" data-title="${escapeHtml(last.name)}" data-index="0"><img src="${imgPath(last)}" alt="品牌故事主图12"><figcaption>${escapeHtml(last.name)}</figcaption></figure>`:''}`}
 function renderBrandCards(node){const imgs=node.images||[];return `<div class="draw-deck"><div class="deck-feature">${carousel({images:imgs},'brand-cards','deck-stage')}</div><p class="deck-caption">珠宝品牌宣传卡 · 按原目录顺序浏览</p><div class="deck-thumbs">${imgs.map((im,i)=>`<button class="deck-thumb ${i===0?'active':''}" data-action="deck-go" data-index="${i}">${String(i+1).padStart(2,'0')}</button>`).join('')}</div></div>`}
 function renderBrandReviews(node){const cards=node.children||[];return `<div class="review-carousel">${carousel({images:cards.flatMap(c=>c.images||[])},'brand-reviews','wide-stage')}</div>`}
@@ -95,7 +101,7 @@ function findParent(node){for(const root of TREE){let found=null;(function walk(
 function showLightbox(figure){const galleryId=figure.dataset.gallery;lightboxItems=[...document.querySelectorAll(`[data-gallery="${CSS.escape(galleryId)}"]`)].map(el=>({src:el.dataset.src,title:el.dataset.title}));lightboxIndex=Number(figure.dataset.index)||0;paintLightbox()}
 function paintLightbox(){const item=lightboxItems[lightboxIndex];if(!item)return;document.querySelector('#viewerImg').src=item.src;document.querySelector('#viewerImg').alt=item.title;document.querySelector('#viewerCaption').textContent='';document.querySelector('.viewer-count').textContent=`${String(lightboxIndex+1).padStart(2,'0')} / ${String(lightboxItems.length).padStart(2,'0')}`;if(!viewer.open)viewer.showModal()}
 function render(){renderNav();setCover();renderSections()}
-function handleSectionClick(e){const button=e.target.closest('[data-action]');if(button){e.preventDefault();const action=button.dataset.action,index=Number(button.dataset.index)||0;if(action==='shoot-prev'||action==='shoot-next'||action==='shoot-to'){autoplayDue.set('shooting',Date.now()+AUTOPLAY_INTERVAL);paintShooting(action==='shoot-to'?index:activeShooting+(action==='shoot-next'?1:-1));}else if(action==='amazon-tab'){activeAmazon=index;renderSections()}else if(action==='ali-tab'){activeAli=index;renderSections()}else if(action==='poster-tab'){activePoster=index;renderSections()}else if(action==='brand-tab'){activeBrand=index;renderSections()}else if(action==='past-tab'){activePast=index;renderSections()}else if(action==='retouch-prev'||action==='retouch-next'||action==='retouch-page'){const node=ROOTS.find(n=>label(n).includes('产品精修')),products=node?.children||[],pageCount=Math.ceil(retouchColumns(products).length/2);if(pageCount){autoplayDue.set('retouch',Date.now()+AUTOPLAY_INTERVAL);activeRetouch=action==='retouch-page'?index:(activeRetouch+(action==='retouch-next'?1:-1)+pageCount)%pageCount;renderRetouchPanel(node)}}else if(action==='slide'){const key=button.dataset.key,items=findCarouselNode(key)?.images||[];autoplayDue.set(`carousel:${key}`,Date.now()+AUTOPLAY_INTERVAL);if(items.length)paintCarousel(key,((slideState.get(key)||0)+Number(button.dataset.delta)+items.length)%items.length)}else if(action==='slide-to'){autoplayDue.set(`carousel:${button.dataset.key}`,Date.now()+AUTOPLAY_INTERVAL);paintCarousel(button.dataset.key,index)}else if(action==='nav-detail'){const root=ROOTS.find(n=>label(n).includes('详情页')),shown=findDir(root,'图片展示')?.images||[],full=findDir(root,'二级页面'),im=shown[index];if(im){const match=detailMatch(im,full);openLong(im.name,[match||im])}}else if(action==='open-product'){openProduct(nodes.get(button.dataset.node))}else if(action==='open-long'){const im={name:button.dataset.name,src:button.dataset.image};openLong(button.dataset.name,[im])}else if(action==='open-detail-image'||action==='open-past-detail'){openMappedDetail(button)}else if(action==='open-cross'){openCross(nodes.get(button.dataset.node))}else if(action==='deck-go'){autoplayDue.set('carousel:brand-cards',Date.now()+AUTOPLAY_INTERVAL);paintCarousel('brand-cards',index)}else if(action==='close-dialog'){detailDialog.close()}if(button.classList.contains('nav-sub-link')){button.blur();button.closest('.nav-group')?.classList.remove('is-open');button.closest('.nav-group')?.querySelector('.nav-sub-toggle')?.setAttribute('aria-expanded','false')}if(button.dataset.jumpSection){nav.classList.remove('open');requestAnimationFrame(()=>{const section=document.getElementById(button.dataset.jumpSection),target=section?.querySelector('.section-body')||section;target?.scrollIntoView({behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'})})}return}const figure=e.target.closest('.gallery-item');if(figure)showLightbox(figure)}
+function handleSectionClick(e){const button=e.target.closest('[data-action]');if(button){e.preventDefault();const action=button.dataset.action,index=Number(button.dataset.index)||0;if(action==='shoot-prev'||action==='shoot-next'||action==='shoot-to'){autoplayDue.set('shooting',Date.now()+AUTOPLAY_INTERVAL);paintShooting(action==='shoot-to'?index:activeShooting+(action==='shoot-next'?1:-1));}else if(action==='amazon-tab'){activeAmazon=index;renderSections()}else if(action==='ali-tab'){activeAli=index;renderSections()}else if(action==='poster-tab'){activePoster=index;renderSections()}else if(action==='brand-tab'){activeBrand=index;renderSections()}else if(action==='past-tab'){activePast=index;renderSections()}else if(action==='retouch-prev'||action==='retouch-next'||action==='retouch-page'){const node=ROOTS.find(n=>label(n).includes('产品精修')),products=node?.children||[],pageCount=Math.ceil(retouchColumns(products).length/2);if(pageCount){autoplayDue.set('retouch',Date.now()+AUTOPLAY_INTERVAL);activeRetouch=action==='retouch-page'?index:(activeRetouch+(action==='retouch-next'?1:-1)+pageCount)%pageCount;renderRetouchPanel(node)}}else if(action==='slide'){const key=button.dataset.key,items=findCarouselNode(key)?.images||[];autoplayDue.set(`carousel:${key}`,Date.now()+AUTOPLAY_INTERVAL);if(items.length)paintCarousel(key,((slideState.get(key)||0)+Number(button.dataset.delta)+items.length)%items.length)}else if(action==='slide-to'){autoplayDue.set(`carousel:${button.dataset.key}`,Date.now()+AUTOPLAY_INTERVAL);paintCarousel(button.dataset.key,index)}else if(action==='nav-detail'){const root=ROOTS.find(n=>label(n).includes('详情页')),shown=findDir(root,'图片展示')?.images||[],full=findDir(root,'二级页面'),im=shown[index];if(im){const match=detailMatch(im,full);openLong(im.name,[match||im])}}else if(action==='open-product'){openProduct(nodes.get(button.dataset.node))}else if(action==='open-long'){const im={name:button.dataset.name,src:button.dataset.image};openLong(button.dataset.name,[im])}else if(action==='open-detail-image'||action==='open-past-detail'){openMappedDetail(button)}else if(action==='open-cross'){openCross(nodes.get(button.dataset.node))}else if(action==='deck-go'){autoplayDue.set('carousel:brand-cards',Date.now()+AUTOPLAY_INTERVAL);paintCarousel('brand-cards',index)}else if(action==='close-dialog'){detailDialog.close()}if(button.classList.contains('nav-sub-link')){button.blur();button.closest('.nav-group')?.classList.remove('is-open');button.closest('.nav-group')?.querySelector('.nav-sub-toggle')?.setAttribute('aria-expanded','false')}if(button.dataset.jumpSection){setMobileMenu(false);requestAnimationFrame(()=>{const section=document.getElementById(button.dataset.jumpSection),target=section?.querySelector('.section-body')||section;target?.scrollIntoView({behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'})})}return}const figure=e.target.closest('.gallery-item');if(figure)showLightbox(figure)}
 const carouselRequests = new WeakMap();
 async function paintCarousel(key,index){const items=findCarouselNode(key)?.images||[],root=[...document.querySelectorAll('[data-carousel]')].find(el=>el.dataset.carousel===key);if(!items.length||!root)return;index=(index+items.length)%items.length;
 const item=items[index],url=imgPath(item),request={index};
@@ -115,8 +121,61 @@ document.addEventListener('contextmenu',e=>{if(e.target.closest('img'))e.prevent
 function findCarouselNode(key){if(key==='brand-story')return {images:(findDir(ROOTS.find(n=>label(n).includes('品牌')),'品牌故事')?.images||[]).filter(im=>/^主图(?:[1-9]|10|11)\./.test(im.name))};if(key==='brand-banner')return findDir(ROOTS.find(n=>label(n).includes('品牌')),'banner');if(key==='brand-cards')return findDir(ROOTS.find(n=>label(n).includes('品牌')),'宣传卡');if(key==='brand-reviews'){const n=findDir(ROOTS.find(n=>label(n).includes('品牌')),'品宣卡');return {images:n?.children?.flatMap(c=>c.images||[])||[]}}if(key.startsWith('ali-'))return ROOTS.find(n=>label(n).includes('速卖通'))?.children?.find(n=>label(n)==='海报')?.children?.[Number(key.split('-')[1])];if(key.startsWith('past-banner-')){const id=key.slice('past-banner-'.length),past=nodes.get(id);return findDir(past,'banner')}return null}
 function openCross(product){if(!product)return;const imgs=product.images||[];const aplus=imgs.filter(im=>/^A\s*\+/i.test(im.name));const white=imgs.filter(im=>im.name.includes('白底'));const main=imgs.filter(im=>!im.name.includes('白底')&&!/^A\s*\+/i.test(im.name));const productImages=`${white.length?gallery({images:white},{grid:'white-grid',group:`cross-white-${nodeIds.get(product)}`}):''}${main.length?gallery({images:main},{grid:'amazon-main-grid',group:`cross-main-${nodeIds.get(product)}`}):''}`;detailDialog.querySelector('.dialog-content').innerHTML=`<header class="dialog-head"><div><small>CROSS-BORDER E-COMMERCE</small><h2>${escapeHtml(label(product))}</h2></div><button class="dialog-close" data-action="close-dialog">×</button></header>${productImages?block('01','商品图片',productImages):''}${aplus.length?block('02','A+ 页面',`<div class="aplus-stack">${aplus.map(im=>`<figure><img src="${imgPath(im)}" alt="${escapeHtml(im.name)}"></figure>`).join('')}</div>`):''}`;showProjectDialog()}
 function openMappedDetail(button){const title=button.dataset.name;const src=button.dataset.image;const section=button.closest('.main-section');let detail=null;if(section.id===sectionId(ROOTS.find(n=>label(n).includes('详情页')))){detail=detailMatch({name:title},findDir(ROOTS.find(n=>label(n).includes('详情页')),'二级页面'))}else{const kind=ROOTS.find(n=>label(n).includes('往期'))?.children?.[activePast];detail=detailMatch({name:title},findDir(populatedPastDetail(kind),'二级页面'))}openLong(title,[detail||{name:title,src}])}
-document.querySelector('#menuToggle').addEventListener('click',()=>nav.classList.toggle('open'));
-nav.addEventListener('click',e=>{const profile=e.target.closest('.profile-trigger');if(profile){const owner=profile.closest('.nav-profile'),open=owner.classList.toggle('is-open');profile.setAttribute('aria-expanded',String(open));if(!open)profile.blur();return}const toggle=e.target.closest('.nav-sub-toggle');if(toggle){const group=toggle.closest('.nav-group'),open=group.classList.toggle('is-open');toggle.setAttribute('aria-expanded',String(open));if(!open)toggle.blur();return}if(e.target.closest('a,.nav-sub-link'))nav.classList.remove('open')});document.addEventListener('click',e=>{if(!e.target.closest('.nav-profile')){const profile=nav.querySelector('.nav-profile');profile?.classList.remove('is-open');profile?.querySelector('.profile-trigger')?.setAttribute('aria-expanded','false');profile?.querySelector('.profile-trigger')?.blur()}});
+const menuToggle=document.querySelector('#menuToggle');
+const mobileLayout=window.matchMedia('(max-width: 680px)');
+function setMobileMenu(open){
+  nav.classList.toggle('open',open);
+  menuToggle.setAttribute('aria-expanded',String(open));
+  menuToggle.setAttribute('aria-label',open?'关闭导航':'打开导航');
+}
+function setProfileOpen(open){
+  const profile=document.querySelector('.nav-profile');
+  profile.classList.toggle('is-open',open);
+  profile.querySelector('.profile-trigger').setAttribute('aria-expanded',String(open));
+}
+function placeProfile(){
+  const profile=document.querySelector('.nav-profile');
+  if(mobileLayout.matches)menuToggle.before(profile);
+  else nav.prepend(profile);
+  setProfileOpen(false);
+  setMobileMenu(false);
+}
+mobileLayout.addEventListener('change',placeProfile);
+menuToggle.addEventListener('click',()=>setMobileMenu(!nav.classList.contains('open')));
+document.querySelector('.site-header').addEventListener('click',event=>{
+  const trigger=event.target.closest('.profile-trigger');
+  if(!trigger)return;
+  const open=!trigger.closest('.nav-profile').classList.contains('is-open');
+  setProfileOpen(open);
+  if(!open)trigger.blur();
+});
+function closeOutsidePanels(event){
+  if(mobileLayout.matches && !event.target.closest('#mainNav,#menuToggle'))setMobileMenu(false);
+  if(!event.target.closest('.nav-profile')){
+    setProfileOpen(false);
+    if(document.activeElement?.closest('.nav-profile'))document.activeElement.blur();
+  }
+}
+document.addEventListener('pointerdown',closeOutsidePanels);
+document.addEventListener('click',closeOutsidePanels);
+nav.addEventListener('click',event=>{
+  const toggle=event.target.closest('.nav-sub-toggle');
+  if(toggle){
+    const open=toggle.closest('.nav-group').classList.toggle('is-open');
+    toggle.setAttribute('aria-expanded',String(open));
+    if(!open)toggle.blur();
+  }else if(event.target.closest('a,.nav-sub-link') && !event.target.closest('.nav-profile')){
+    setMobileMenu(false);
+  }
+});
+host.addEventListener('click',event=>{
+  const button=event.target.closest('.model-fold-toggle');
+  if(!button)return;
+  const open=button.getAttribute('aria-expanded')!=='true';
+  button.setAttribute('aria-expanded',String(open));
+  button.textContent=open?'收起图片':`展开其余 ${button.dataset.remaining} 张`;
+  if(!open)button.scrollIntoView({block:'nearest'});
+});
 document.querySelector('.viewer-close').addEventListener('click',()=>viewer.close());document.querySelector('.viewer-prev').addEventListener('click',()=>{lightboxIndex=(lightboxIndex-1+lightboxItems.length)%lightboxItems.length;paintLightbox()});document.querySelector('.viewer-next').addEventListener('click',()=>{lightboxIndex=(lightboxIndex+1)%lightboxItems.length;paintLightbox()});
 document.addEventListener('keydown',e=>{if(viewer.open){if(e.key==='ArrowLeft'){lightboxIndex=(lightboxIndex-1+lightboxItems.length)%lightboxItems.length;paintLightbox()}if(e.key==='ArrowRight'){lightboxIndex=(lightboxIndex+1)%lightboxItems.length;paintLightbox()}}});
 function updateActiveNav(){const probeY=Math.min(150,Math.max(104,window.innerHeight*.16));const sections=[...document.querySelectorAll('.hero,.main-section')];let activeSection=sections[0];for(const section of sections){const rect=section.getBoundingClientRect();if(rect.top<=probeY)activeSection=section;if(rect.top<=probeY&&rect.bottom>probeY){activeSection=section;break}}const active=activeSection?.id==='cover'?'#cover':`#${activeSection?.id||'cover'}`;nav.querySelectorAll('a').forEach(a=>a.classList.toggle('active',a.hash===active))}
@@ -144,4 +203,4 @@ function advanceAutoplay(){
  if(shootingPanel){if(!carouselOnScreen(shootingPanel)||shootingPanel.matches(':hover'))autoplayDue.set('shooting',now+AUTOPLAY_INTERVAL);else{const due=autoplayDue.get('shooting');if(due===undefined)autoplayDue.set('shooting',now+AUTOPLAY_INTERVAL);else if(now>=due){paintShooting(activeShooting+1);autoplayDue.set('shooting',now+AUTOPLAY_INTERVAL)}}}
 }
 document.addEventListener('visibilitychange',()=>{const due=Date.now()+AUTOPLAY_INTERVAL;for(const root of document.querySelectorAll('[data-carousel]'))autoplayDue.set(`carousel:${root.dataset.carousel}`,due);autoplayDue.set('retouch',due);autoplayDue.set('shooting',due)});
-render();updateActiveNav();updateBackToTop();window.setInterval(advanceAutoplay,500);
+render();placeProfile();updateActiveNav();updateBackToTop();window.setInterval(advanceAutoplay,500);
