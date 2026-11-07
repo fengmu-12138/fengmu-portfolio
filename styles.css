@@ -241,3 +241,10 @@ img{-webkit-user-drag:none;user-select:none;-webkit-user-select:none}
   .footer-contact svg { width: 14px; height: 14px; flex-shrink: 0; }
   .back-to-top { bottom: 130px; }
 }
+.carousel-frame { touch-action: pan-y; }
+@media (max-width: 680px) {
+  .carousel-frame { touch-action: pan-y; }
+  #projectDialog { overscroll-behavior: contain; }
+  #projectDialog .long-view { overscroll-behavior: contain; }
+  #projectDialog .long-page-parts { touch-action: pan-y; }
+}
