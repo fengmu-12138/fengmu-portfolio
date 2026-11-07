@@ -248,3 +248,6 @@ img{-webkit-user-drag:none;user-select:none;-webkit-user-select:none}
   #projectDialog .long-view { overscroll-behavior: contain; }
   #projectDialog .long-page-parts { touch-action: pan-y; }
 }
+@media (max-width: 680px) {
+  .section-tabs, .retouch-spread-wrap, [data-shooting-carousel] { touch-action: pan-y; }
+}
