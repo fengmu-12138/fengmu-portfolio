@@ -5,7 +5,7 @@ const nodeIds=new WeakMap(),nodes=new Map();let nextId=0,gallerySerial=0;
 for(const root of TREE){(function register(node){const id=`p${++nextId}`;nodeIds.set(node,id);nodes.set(id,node);(node.children||[]).forEach(register)})(root)}
 const byPrefix=(node,prefix)=>node?.children?.find(c=>label(c).startsWith(prefix));
 const label=node=>node?.name?.replace(/^\d+(?:\.\d+)*[.、\s_-]*/,'').replace(/^板块[一二三四五]\s*[—–-]\s*/,'')||node?.name||'';
-const imgPath=img=>{const src=String(img.src||'');if(/^https:\/\/ik\.imagekit\.io\/fengmu12138\//i.test(src)){const clean=src.split('?')[0].replace('https://ik.imagekit.io/fengmu12138/','');return 'https://ik.imagekit.io/fengmu12138/tr:w-1600,q-82,f-auto/'+clean}return /^https?:\/\//i.test(src)?src:decodeURIComponent(src).split('/').map(encodeURIComponent).join('/')};
+const imgPath=img=>{const src=String(img.src||'');if(/^https:\/\/ik\.imagekit\.io\/fengmu12138\//i.test(src)){const clean=src.split('?')[0].replace('https://ik.imagekit.io/fengmu12138/','');const width=window.matchMedia?.('(max-width: 680px)').matches?900:1600;return 'https://ik.imagekit.io/fengmu12138/tr:w-'+width+',q-82,f-auto/'+clean}return /^https?:\/\//i.test(src)?src:decodeURIComponent(src).split('/').map(encodeURIComponent).join('/')};
 const fullImgPath=img=>imgPath({src:img.fullSrc||img.src});
 const keyImg=img=>img.name.replace(/\.[^.]+$/,'').toLowerCase().replace(/(大促|首页设计|首页|活动|展示页面|二级页面)/g,'').replace(/[\s()（）_-]/g,'');
 const allImages=node=>node?.images||[];
